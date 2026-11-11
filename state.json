@@ -1,0 +1,33 @@
+{
+ "https://finale.sih.gov.in/": {
+  "checked": "2026-11-11T15:39:06.017005+05:30",
+  "lines": [
+   "(page source fingerprint 38b76a32daf2)"
+  ],
+  "links": {}
+ },
+ "probe:https://sih.gov.in/sih2026": {
+  "status": 403
+ },
+ "probe:https://sih.gov.in/sih2026-grand-finale-result": {
+  "status": 403
+ },
+ "probe:https://sih.gov.in/sih2026-screening-final-result": {
+  "status": 403
+ },
+ "probe:https://sih.gov.in/sih2026-screening-result": {
+  "status": 403
+ },
+ "probe:https://sih.gov.in/sih2026-screening-result-batch2": {
+  "status": 403
+ },
+ "probe:https://sih.gov.in/sih2026/nodalcenter": {
+  "status": 403
+ },
+ "probe:https://sih.gov.in/sih2026/screening-result": {
+  "status": 403
+ },
+ "probe:https://sih.gov.in/sih2026/sih2026-grand-finale-result": {
+  "status": 403
+ }
+}
