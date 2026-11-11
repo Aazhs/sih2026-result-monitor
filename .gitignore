@@ -1,2 +1,4 @@
 state.json.tmp
 __pycache__/
+local-state.json
+local.log

@@ -52,7 +52,8 @@ HOT_WORDS = re.compile(
 
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
 IST = timezone(timedelta(hours=5, minutes=30))
-STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state.json")
+STATE_FILE = os.environ.get("STATE_FILE") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "state.json")
+WHERE = os.environ.get("MONITOR_NAME", "cloud")
 
 # Lines that change on every request and would cause false alarms.
 NOISE_LINE = re.compile(r"^\s*(\d[\d,]*\s*)?(visitors?|hits|views?)\b|csrf|__RequestVerification", re.I)
@@ -183,6 +184,15 @@ def notify(title, message, click=None, urgent=False):
         except Exception as e:
             log(f"  telegram failed: {e!r}")
 
+    if os.environ.get("MAC_NOTIFY") == "1":
+        try:
+            subprocess.run(["osascript", "-e", "on run argv",
+                            "-e", 'display notification (item 2 of argv) with title (item 1 of argv) sound name "Glass"',
+                            "-e", "end run", title, message[:250]], timeout=10)
+            sent = True
+        except Exception as e:
+            log(f"  mac notification failed: {e!r}")
+
     if not sent:
         log("  (no notification channel configured or all failed)")
     return sent
@@ -204,7 +214,7 @@ def save_state(state, reason):
     if os.environ.get("COMMIT_STATE") == "1":
         try:
             d = os.path.dirname(STATE_FILE)
-            subprocess.run(["git", "-C", d, "add", "state.json"], check=True)
+            subprocess.run(["git", "-C", d, "add", os.path.basename(STATE_FILE)], check=True)
             subprocess.run(["git", "-C", d, "commit", "-q", "-m", f"state: {reason}"[:120]], check=True)
             subprocess.run(["git", "-C", d, "pull", "-q", "--rebase", "-X", "theirs"], check=False)
             subprocess.run(["git", "-C", d, "push", "-q"], check=True)
@@ -336,7 +346,7 @@ def main():
 
         if first_ever:
             save_state(state, "baseline")
-            notify("SIH 2026 monitor is live",
+            notify(f"SIH 2026 monitor is live ({WHERE})",
                    f"Watching {len(WATCH_PAGES)} pages + {len(PROBE_URLS)} expected result URLs every "
                    f"{args.interval}s. You'll get an alert the moment anything changes.",
                    click="https://sih.gov.in/")
