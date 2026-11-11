@@ -333,14 +333,26 @@ def main():
 
         home_ok = statuses.get("https://sih.gov.in/") == 200
         fail_streak = 0 if home_ok else fail_streak + 1
-        # only meaningful if this machine has ever loaded the homepage (403 = blocked, not down)
-        if fail_streak >= 15 and not down_alerted and "https://sih.gov.in/" in state \
-                and statuses.get("https://sih.gov.in/") != 403:
-            notify("sih.gov.in is not responding",
-                   f"Homepage has failed for ~{fail_streak} checks in a row (status {statuses.get('https://sih.gov.in/')}). "
-                   "Heavy traffic sometimes means results just dropped - check manually.",
-                   click="https://sih.gov.in/")
+        home_status = statuses.get("https://sih.gov.in/")
+        if not home_ok:
+            log(f"  WARNING: homepage not readable (status {home_status}) - this check is blind")
+        # only meaningful if this machine has ever loaded the homepage (cloud is always 403)
+        if fail_streak >= 5 and not down_alerted and "https://sih.gov.in/" in state:
+            if home_status == 403:
+                notify("SIH monitor is BLOCKED",
+                       f"sih.gov.in is refusing this connection (403) for {fail_streak} checks. "
+                       "Is a VPN on? Turn it off - the site blocks foreign/VPN IPs. Monitoring is paused until then.")
+            elif home_status == 0:
+                notify("SIH monitor: no internet",
+                       f"Couldn't reach sih.gov.in for {fail_streak} checks (network/DNS error). Check Wi-Fi.")
+            else:
+                notify("sih.gov.in is erroring",
+                       f"Homepage returned status {home_status} for {fail_streak} checks in a row. "
+                       "Sometimes this means heavy traffic (results just dropped?) - check manually.",
+                       click="https://sih.gov.in/", urgent=True)
             down_alerted = True
+        if home_ok and down_alerted:
+            notify("SIH monitor is back online", "sih.gov.in is readable again - monitoring resumed.")
         if home_ok and down_alerted:
             down_alerted = False
 
