@@ -323,7 +323,9 @@ def main():
 
         home_ok = statuses.get("https://sih.gov.in/") == 200
         fail_streak = 0 if home_ok else fail_streak + 1
-        if fail_streak >= 15 and not down_alerted:
+        # only meaningful if this machine has ever loaded the homepage (403 = blocked, not down)
+        if fail_streak >= 15 and not down_alerted and "https://sih.gov.in/" in state \
+                and statuses.get("https://sih.gov.in/") != 403:
             notify("sih.gov.in is not responding",
                    f"Homepage has failed for ~{fail_streak} checks in a row (status {statuses.get('https://sih.gov.in/')}). "
                    "Heavy traffic sometimes means results just dropped - check manually.",
