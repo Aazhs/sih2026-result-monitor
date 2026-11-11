@@ -13,7 +13,7 @@ on:
         default: false
 
 concurrency:
-  group: sih-monitor
+  group: sih-monitor-${{ github.event.inputs.test_notify == 'true' && 'test' || 'watch' }}
   cancel-in-progress: false
 
 permissions:
